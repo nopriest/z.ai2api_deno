@@ -1,0 +1,36 @@
+{
+  "name": "z-ai2api-deno",
+  "version": "1.2.0",
+  "description": "轻量级 OpenAI API 兼容代理服务，通过 Claude Code Router 接入 Z.AI，支持 GLM-4.5 系列模型的完整功能",
+  "type": "module",
+  "imports": {
+    "std/": "https://deno.land/std@0.208.0/",
+    "oak/": "https://deno.land/x/oak@v12.6.1/",
+    "zod/": "https://deno.land/x/zod@v3.22.4/"
+  },
+  "tasks": {
+    "start": "deno run --allow-net --allow-env --allow-read main.ts",
+    "dev": "deno run --allow-net --allow-env --allow-read --watch main.ts",
+    "test": "deno test --allow-net --allow-env --allow-read",
+    "fmt": "deno fmt",
+    "lint": "deno lint",
+    "check": "deno check **/*.ts"
+  },
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window"],
+    "strict": true
+  },
+  "lint": {
+    "include": ["**/*.ts"],
+    "exclude": ["**/node_modules/**"]
+  },
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 88,
+    "indentWidth": 2,
+    "semiColons": true,
+    "singleQuote": false,
+    "proseWrap": "preserve"
+  }
+}
