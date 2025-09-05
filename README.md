@@ -1,11 +1,12 @@
-# Z.AI OpenAI API 代理服务
+<img width="100" src="https://wsrv.nl/?url=https%3a%2f%2fz-cdn.chatglm.cn%2fz-ai%2fstatic%2flogo.svg&w=300&output=webp" />
+<h1>Z.AI OpenAI API 代理服务 (Deno版)</h1>
 
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
-![Python: 3.8+](https://img.shields.io/badge/python-3.8+-green.svg)
-![FastAPI](https://img.shields.io/badge/framework-FastAPI-009688.svg)
+![Deno: 1.40+](https://img.shields.io/badge/deno-1.40+-green.svg)
+![Oak](https://img.shields.io/badge/framework-Oak-009688.svg)
 ![Version: 1.2.0](https://img.shields.io/badge/version-1.2.0-brightgreen.svg)
 
-轻量级 OpenAI API 兼容代理服务，通过 Claude Code Router 接入 Z.AI，支持 GLM-4.5 系列模型的完整功能。
+轻量级 OpenAI API 兼容代理服务，通过 Claude Code Router 接入 Z.AI，支持 GLM-4.5 系列模型的完整功能。使用 Deno 和 Oak 框架重写，提供更好的性能和类型安全。
 
 ## ✨ 核心特性
 
@@ -19,13 +20,14 @@
 - 🛡️ **会话隔离** - 匿名模式保护隐私
 - 🔧 **灵活配置** - 环境变量灵活配置
 - 📊 **多模型映射** - 智能上游模型路由
+- ⚡ **Deno 运行时** - 原生 TypeScript 支持，更好的性能
 
 ## 🚀 快速开始
 
 ### 环境要求
 
-- Python 3.8+
-- pip 或 uv (推荐)
+- Deno 1.40+
+- 现代浏览器或 Node.js 环境
 
 ### 安装运行
 
@@ -34,41 +36,37 @@
 git clone https://github.com/ZyphrZero/z.ai2api_python.git
 cd z.ai2api_python
 
-# 使用 uv (推荐)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-uv sync
-uv run python main.py
+# 使用 Deno 运行
+deno task start
 
-# 或使用 pip (推荐使用清华源)
-pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-python main.py
+# 或开发模式（自动重载）
+deno task dev
 ```
 
-服务启动后访问：http://localhost:8080/docs
+服务启动后访问：http://localhost:8080/v1/models
 
 ### 基础使用
 
 #### OpenAI API 客户端
 
-```python
-import openai
+```typescript
+import OpenAI from 'openai';
 
-# 初始化客户端
-client = openai.OpenAI(
-    base_url="http://localhost:8080/v1",
-    api_key="your-auth-token"  # 替换为你的 AUTH_TOKEN
-)
+// 初始化客户端
+const client = new OpenAI({
+  baseURL: "http://localhost:8080/v1",
+  apiKey: "your-auth-token"  // 替换为你的 AUTH_TOKEN
+});
 
-# 普通对话
-response = client.chat.completions.create(
-    model="GLM-4.5",
-    messages=[{"role": "user", "content": "你好，介绍一下 Python"}],
-    stream=False
-)
+// 普通对话
+const response = await client.chat.completions.create({
+  model: "GLM-4.5",
+  messages: [{ role: "user", content: "你好，介绍一下 TypeScript" }],
+  stream: false
+});
 
-print(response.choices[0].message.content)
+console.log(response.choices[0].message.content);
 ```
-
 
 ### Docker 部署
 
@@ -90,49 +88,52 @@ docker-compose up -d
 
 ### Function Call 功能
 
-```python
-# 定义工具
-tools = [{
-    "type": "function",
-    "function": {
-        "name": "get_weather",
-        "description": "获取天气信息",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "city": {"type": "string", "description": "城市名称"}
-            },
-            "required": ["city"]
-        }
+```typescript
+// 定义工具
+const tools = [{
+  type: "function",
+  function: {
+    name: "get_weather",
+    description: "获取天气信息",
+    parameters: {
+      type: "object",
+      properties: {
+        city: { type: "string", description: "城市名称" }
+      },
+      required: ["city"]
     }
-}]
+  }
+}];
 
-# 使用工具
-response = client.chat.completions.create(
-    model="GLM-4.5",
-    messages=[{"role": "user", "content": "北京天气怎么样？"}],
-    tools=tools,
-    tool_choice="auto"
-)
+// 使用工具
+const response = await client.chat.completions.create({
+  model: "GLM-4.5",
+  messages: [{ role: "user", content: "北京天气怎么样？" }],
+  tools: tools,
+  tool_choice: "auto"
+});
 ```
 
 ### 流式响应
 
-```python
-response = client.chat.completions.create(
-    model="GLM-4.5-Thinking",
-    messages=[{"role": "user", "content": "解释量子计算"}],
-    stream=True
-)
+```typescript
+const response = await client.chat.completions.create({
+  model: "GLM-4.5-Thinking",
+  messages: [{ role: "user", content: "解释量子计算" }],
+  stream: true
+});
 
-for chunk in response:
-    content = chunk.choices[0].delta.content
-    reasoning = chunk.choices[0].delta.reasoning_content
-    
-    if content:
-        print(content, end="")
-    if reasoning:
-        print(f"\n🤔 思考: {reasoning}\n")
+for await (const chunk of response) {
+  const content = chunk.choices[0].delta.content;
+  const reasoning = chunk.choices[0].delta.reasoning_content;
+  
+  if (content) {
+    process.stdout.write(content);
+  }
+  if (reasoning) {
+    console.log(`\n🤔 思考: ${reasoning}\n`);
+  }
+}
 ```
 
 ## ⚙️ 配置说明
@@ -166,54 +167,59 @@ for chunk in response:
 
 ### 1. AI 应用开发
 
-```python
-# 集成到现有应用
-from openai import OpenAI
+```typescript
+// 集成到现有应用
+import OpenAI from 'openai';
 
-client = OpenAI(
-    base_url="http://localhost:8080/v1",
-    api_key="your-token"
-)
+const client = new OpenAI({
+  baseURL: "http://localhost:8080/v1",
+  apiKey: "your-token"
+});
 
-# 智能客服
-def chat_with_ai(message):
-    response = client.chat.completions.create(
-        model="GLM-4.5",
-        messages=[{"role": "user", "content": message}]
-    )
-    return response.choices[0].message.content
+// 智能客服
+async function chatWithAI(message: string): Promise<string> {
+  const response = await client.chat.completions.create({
+    model: "GLM-4.5",
+    messages: [{ role: "user", content: message }]
+  });
+  return response.choices[0].message.content || "";
+}
 ```
 
 ### 2. 多模型对比测试
 
-```python
-models = ["GLM-4.5", "GLM-4.5-Thinking", "GLM-4.5-Search", "GLM-4.5-Air"]
+```typescript
+const models = ["GLM-4.5", "GLM-4.5-Thinking", "GLM-4.5-Search", "GLM-4.5-Air"];
 
-for model in models:
-    response = client.chat.completions.create(
-        model=model,
-        messages=[{"role": "user", "content": "什么是机器学习？"}]
-    )
-    print(f"\n=== {model} ===")
-    print(response.choices[0].message.content)
+for (const model of models) {
+  const response = await client.chat.completions.create({
+    model: model,
+    messages: [{ role: "user", content: "什么是机器学习？" }]
+  });
+  console.log(`\n=== ${model} ===`);
+  console.log(response.choices[0].message.content);
+}
 ```
 
 ### 3. 工具调用集成
 
-```python
-# 结合外部 API
-def call_external_api(tool_name, arguments):
-    # 执行实际工具调用
-    return result
+```typescript
+// 结合外部 API
+async function callExternalAPI(toolName: string, arguments: any): Promise<any> {
+  // 执行实际工具调用
+  return result;
+}
 
-# 处理工具调用
-if response.choices[0].message.tool_calls:
-    for tool_call in response.choices[0].message.tool_calls:
-        result = call_external_api(
-            tool_call.function.name,
-            json.loads(tool_call.function.arguments)
-        )
-        # 将结果返回给模型继续对话
+// 处理工具调用
+if (response.choices[0].message.tool_calls) {
+  for (const toolCall of response.choices[0].message.tool_calls) {
+    const result = await callExternalAPI(
+      toolCall.function.name,
+      JSON.parse(toolCall.function.arguments)
+    );
+    // 将结果返回给模型继续对话
+  }
+}
 ```
 
 ## ❓ 常见问题
@@ -309,7 +315,7 @@ A: 通过环境变量配置，推荐使用 `.env` 文件。
 ```
 ┌──────────────┐      ┌─────────────────────────┐      ┌─────────────────┐
 │   OpenAI     │      │                         │      │                 │
-│  Client      │────▶│    FastAPI Server       │────▶│   Z.AI API      │
+│  Client      │────▶│    Oak Server (Deno)    │────▶│   Z.AI API      │
 └──────────────┘      │                         │      │                 │
 ┌──────────────┐      │ ┌─────────────────────┐ │      │ ┌─────────────┐ │
 │ Claude Code  │      │ │ /v1/chat/completions│ │      │ │0727-360B-API│ │
@@ -327,34 +333,41 @@ A: 通过环境变量配置，推荐使用 `.env` 文件。
 ### 项目结构
 
 ```
-z.ai2api_python/
+z.ai2api-deno/
 ├── app/
 │   ├── core/
-│   │   ├── __init__.py
-│   │   ├── config.py          # 配置管理
-│   │   ├── openai.py          # OpenAI API 实现
-│   │   └── response_handlers.py  # 响应处理器
+│   │   ├── config.ts              # 配置管理
+│   │   ├── openai.ts              # OpenAI API 实现
+│   │   └── response_handlers.ts   # 响应处理器
 │   ├── models/
-│   │   ├── __init__.py
-│   │   └── schemas.py         # Pydantic 模型定义
+│   │   └── schemas.ts             # Zod 模型定义
 │   ├── utils/
-│   │   ├── __init__.py
-│   │   ├── helpers.py         # 辅助函数
-│   │   ├── tools.py           # 增强工具调用处理
-│   │   └── sse_parser.py      # SSE 流式解析器
-│   └── __init__.py
-├── tests/                     # 单元测试
-├── deploy/                    # Docker 部署配置
-├── main.py                    # FastAPI 应用入口
-├── requirements.txt           # Python 依赖
-├── .env.example              # 环境变量示例
-└── README.md                  # 项目文档
+│   │   ├── helpers.ts             # 辅助函数
+│   │   ├── tools.ts               # 增强工具调用处理
+│   │   └── sse_parser.ts          # SSE 流式解析器
+├── deploy/                        # Docker 部署配置
+├── main.ts                        # Oak 应用入口
+├── deno.json                      # Deno 项目配置
+└── README.md                      # 项目文档
 ```
+
+## 🆚 Deno vs Python 版本对比
+
+| 特性 | Python 版本 | Deno 版本 |
+|------|-------------|-----------|
+| 运行时 | Python 3.8+ | Deno 1.40+ |
+| 框架 | FastAPI | Oak |
+| 类型系统 | Pydantic | Zod |
+| 包管理 | pip/uv | 内置 |
+| 启动速度 | 较慢 | 更快 |
+| 内存占用 | 较高 | 较低 |
+| 类型安全 | 运行时验证 | 编译时检查 |
+| 部署大小 | 较大 | 更小 |
 
 ## 🤝 贡献指南
 
 我们欢迎所有形式的贡献！
-请确保代码符合 PEP 8 规范，并更新相关文档。
+请确保代码符合 Deno 标准，并更新相关文档。
 
 ## 📄 许可证
 
