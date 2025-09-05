@@ -18,24 +18,29 @@ openaiRouter.get("/models", async (ctx) => {
   /**List available models*/
   const currentTime = Math.floor(Date.now() / 1000);
   const response: ModelsResponse = {
+    object: "list",
     data: [
       {
         id: config.PRIMARY_MODEL,
+        object: "model",
         created: currentTime,
         owned_by: "z.ai"
       },
       {
         id: config.THINKING_MODEL,
+        object: "model",
         created: currentTime,
         owned_by: "z.ai"
       },
       {
         id: config.SEARCH_MODEL,
+        object: "model",
         created: currentTime,
         owned_by: "z.ai"
       },
       {
         id: config.AIR_MODEL,
+        object: "model",
         created: currentTime,
         owned_by: "z.ai"
       },
@@ -44,7 +49,7 @@ openaiRouter.get("/models", async (ctx) => {
   ctx.response.body = response;
 });
 
-openaiRouter.post("/v1/chat/completions", async (ctx) => {
+openaiRouter.post("/chat/completions", async (ctx) => {
   /**Handle chat completion requests*/
   debugLog("收到chat completions请求");
   
