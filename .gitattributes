@@ -1,2 +1,31 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# TypeScript files
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.json text eol=lf
+
+# Deno configuration files
+deno.json text eol=lf
+deno.lock text eol=lf
+
+# Docker files
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+docker-compose.yaml text eol=lf
+
+# Markdown files
+*.md text eol=lf
+
+# Shell scripts
+*.sh text eol=lf
+
+# Environment files
+.env* text eol=lf
+
+# YAML files
+*.yml text eol=lf
+*.yaml text eol=lf
