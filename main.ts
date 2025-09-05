@@ -2,50 +2,45 @@
  * Main application entry point
  */
 
-import { Application, Router } from "oak/mod.ts";
+// JSR 导入
+import { Application, Router } from "jsr:@oak/oak";
+import { oakCors } from "jsr:@oak/cors";
 import { config } from "./app/core/config.ts";
 import { openaiRouter } from "./app/core/openai.ts";
 
-// Create Oak application
+// 创建 Oak 应用
 const app = new Application();
 
-// Add CORS middleware
-app.use(async (ctx, next) => {
-  ctx.response.headers.set("Access-Control-Allow-Origin", "*");
-  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
-  ctx.response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  ctx.response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  
-  if (ctx.request.method === "OPTIONS") {
-    ctx.response.status = 200;
-    return;
-  }
-  
-  await next();
-});
+// 添加 CORS 中间件
+app.use(oakCors({
+  origin: "*",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  headers: ["Content-Type", "Authorization"],
+}));
 
-// Create main router
+// 创建主路由
 const router = new Router();
 
-// Include OpenAI API routes
+// 引入 OpenAI API 路由
 router.use("/v1", openaiRouter.routes());
 router.use("/v1", openaiRouter.allowedMethods());
 
-// Root endpoint
+// 根路径端点
 router.get("/", (ctx) => {
   ctx.response.body = { message: "OpenAI Compatible API Server" };
 });
 
-// Handle OPTIONS requests
+// 处理 OPTIONS 请求
 router.options("/", (ctx) => {
   ctx.response.status = 200;
 });
 
-// Use router
+// 使用路由
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-// Error handling middleware
+// 错误处理中间件
 app.use(async (ctx, next) => {
   try {
     await next();
@@ -56,7 +51,7 @@ app.use(async (ctx, next) => {
   }
 });
 
-// Start server
+// 启动服务器
 const port = config.LISTEN_PORT;
 console.log(`🚀 Server starting on http://0.0.0.0:${port}`);
 console.log(`📖 API docs available at http://localhost:${port}/v1/models`);
