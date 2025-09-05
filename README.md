@@ -36,8 +36,8 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/ZyphrZero/z.ai2api_python.git
-cd z.ai2api_python
+git clone https://github.com/Luotianyi-0712/z.ai2api_deno.git
+cd z.ai2api_deno
 
 # 使用 Deno 运行
 deno task start
