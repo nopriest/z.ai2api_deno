@@ -5,8 +5,8 @@
   "type": "module",
   "imports": {
     "std/": "https://deno.land/std@0.208.0/",
-    "oak/": "jsr:@oak/oak",
-    "cors/": "jsr:@momiji/cors",
+    "oak/": "jsr:@oak/oak/",
+    "cors/": "jsr:@momiji/cors/",
     "zod/": "https://deno.land/x/zod@v3.23.4/"
   },
   "tasks": {
