@@ -3,7 +3,7 @@
  */
 
 // JSR 导入
-import { Application, Router } from "oak";
+import { Application, Router } from "jsr:@oak/oak";
 import { oakCors } from "jsr:@momiji/cors";
 import { config } from "./app/core/config.ts";
 import { openaiRouter } from "./app/core/openai.ts";
