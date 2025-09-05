@@ -158,7 +158,7 @@ for await (const chunk of response) {
 | `TOOL_SUPPORT` | `true` | Function Call 功能开关 |
 | `SKIP_AUTH_TOKEN` | `false` | 跳过认证令牌验证 |
 | `SCAN_LIMIT` | `200000` | 扫描限制 |
-| `BACKUP_TOKEN` | `eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...` | 备用认证令牌 |
+| `BACKUP_TOKEN` | `eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...` | Z.ai 固定访问令牌 |
 
 ### 思考内容处理策略
 
