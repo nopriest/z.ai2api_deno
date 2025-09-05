@@ -409,5 +409,5 @@ z.ai2api-deno/
 ---
 
 <div align="center">
-Made with ❤️ by the Linux.do community
+Made with ❤️ by the Linux.do community fork
 </div>
