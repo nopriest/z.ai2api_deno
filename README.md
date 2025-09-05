@@ -386,5 +386,5 @@ z.ai2api-deno/
 ---
 
 <div align="center">
-Made with ❤️ by the community
+Made with ❤️ by the Linux.do community
 </div>
