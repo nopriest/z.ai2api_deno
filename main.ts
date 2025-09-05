@@ -4,7 +4,7 @@
 
 // JSR 导入
 import { Application, Router } from "oak/mod.ts";
-import { oakCors } from "./mod.ts";
+import { oakCors } from "cors/mod.ts";
 import { config } from "./app/core/config.ts";
 import { openaiRouter } from "./app/core/openai.ts";
 
