@@ -313,6 +313,28 @@ A:
 **Q: 如何自定义配置？**
 A: 通过环境变量配置，推荐使用 `.env` 文件。
 
+## 🔑 获取 Z.ai API Token
+
+要使用完整的多模态功能，需要获取正式的 Z.ai API Token：
+
+### 方式 1: 通过 Z.ai 网站
+
+1. 访问 [Z.ai 官网](https://chat.z.ai)
+2. 注册账户并登录，进入 [Z.ai API Keys](https://z.ai/manage-apikey/apikey-list) 设置页面，在该页面设置 _**个人 API Token**_
+3. 将 Token 放置在 `BACKUP_TOKEN` 环境变量中
+
+### 方式 2: 浏览器开发者工具（临时方案）
+
+1. 打开 [Z.ai 聊天界面](https://chat.z.ai)
+2. 按 F12 打开开发者工具
+3. 切换到 "Application" 或 "存储" 标签
+4. 查看 Local Storage 中的认证 token
+5. 复制 token 值设置为环境变量
+
+> ⚠️ **注意**: 方式 2 获取的 token 可能有时效性，建议使用方式 1 获取长期有效的 API Token。
+> ❗ **重要提示**: 多模态模型需要**官方 Z.ai API 非匿名 Token**，匿名 token 不支持多媒体处理。
+
+
 ## 🏗️ 技术架构
 
 ```
