@@ -1,14 +1,15 @@
-<div align=center>
-<img width="100" src="https://wsrv.nl/?url=https%3a%2f%2fz-cdn.chatglm.cn%2fz-ai%2fstatic%2flogo.svg&w=300&output=webp" />
-<h1>Z.AI OpenAI API 代理服务 (Deno版)</h1>
+<div align="center">
+  <img width="100" src="https://wsrv.nl/?url=https%3a%2f%2fz-cdn.chatglm.cn%2fz-ai%2fstatic%2flogo.svg&w=300&output=webp" />
+  <h1>Z.AI OpenAI API 代理服务 (Deno版)</h1>
+  
+  ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+  ![Deno: 1.40+](https://img.shields.io/badge/deno-1.40+-green.svg)
+  ![Oak](https://img.shields.io/badge/framework-Oak-009688.svg)
+  ![Version: 1.2.0](https://img.shields.io/badge/version-1.2.0-brightgreen.svg)
+  
+  <p>轻量级 OpenAI API 兼容代理服务，通过 Claude Code Router 接入 Z.AI，支持 GLM-4.5 系列模型的完整功能。使用 Deno 和 Oak 框架重写，提供更好的性能和类型安全。</p>
 </div>
 
-![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
-![Deno: 1.40+](https://img.shields.io/badge/deno-1.40+-green.svg)
-![Oak](https://img.shields.io/badge/framework-Oak-009688.svg)
-![Version: 1.2.0](https://img.shields.io/badge/version-1.2.0-brightgreen.svg)
-
-轻量级 OpenAI API 兼容代理服务，通过 Claude Code Router 接入 Z.AI，支持 GLM-4.5 系列模型的完整功能。使用 Deno 和 Oak 框架重写，提供更好的性能和类型安全。
 
 ## ✨ 核心特性
 
