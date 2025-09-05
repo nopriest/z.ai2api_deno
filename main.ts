@@ -4,7 +4,7 @@
 
 // JSR 导入
 import { Application, Router } from "oak/mod.ts";
-import { oakCors } from "jsr:@momiji/cors@^1.0.0";
+import { cors } from "jsr:@momiji/cors@^1.0.0";
 import { config } from "./app/core/config.ts";
 import { openaiRouter } from "./app/core/openai.ts";
 
@@ -12,7 +12,7 @@ import { openaiRouter } from "./app/core/openai.ts";
 const app = new Application();
 
 // 添加 CORS 中间件
-app.use(oakCors({
+app.use(cors({
   origin: "*",
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
