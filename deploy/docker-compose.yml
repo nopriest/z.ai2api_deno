@@ -1,29 +1,44 @@
 version: '3.8'
 
 services:
-  api-server:
-    build: 
+  z-ai2api-deno:
+    build:
       context: ..
       dockerfile: deploy/Dockerfile
-    container_name: z-ai-api-server
     ports:
       - "8080:8080"
     environment:
-      # Auth Configuration
+      # API Configuration
+      - API_ENDPOINT=https://chat.z.ai/api/chat/completions
       - AUTH_TOKEN=sk-your-api-key
-      # 是否跳过api key验证
-      - SKIP_AUTH_TOKEN=false
-      # Server Configurations
+      - BACKUP_TOKEN=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjMxNmJjYjQ4LWZmMmYtNGExNS04NTNkLWYyYTI5YjY3ZmYwZiIsImVtYWlsIjoiR3Vlc3QtMTc1NTg0ODU4ODc4OEBndWVzdC5jb20ifQ.PktllDySS3trlyuFpTeIZf-7hl8Qu1qYF3BxjgIul0BrNux2nX9hVzIjthLXKMWAf9V0qM8Vm_iyDqkjPGsaiQ
+      
+      # Model Configuration
+      - PRIMARY_MODEL=GLM-4.5
+      - THINKING_MODEL=GLM-4.5-Thinking
+      - SEARCH_MODEL=GLM-4.5-Search
+      - AIR_MODEL=GLM-4.5-Air
+      
+      # Server Configuration
+      - LISTEN_PORT=8080
       - DEBUG_LOGGING=true
+      
       # Feature Configuration
       - THINKING_PROCESSING=think
       - ANONYMOUS_MODE=true
       - TOOL_SUPPORT=true
       - SCAN_LIMIT=200000
+      - SKIP_AUTH_TOKEN=false
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/models"]
+      test: ["CMD", "deno", "eval", "fetch('http://localhost:8080/').then(r => r.ok ? Deno.exit(0) : Deno.exit(1))"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 40s
+    networks:
+      - z-ai-network
+
+networks:
+  z-ai-network:
+    driver: bridge
