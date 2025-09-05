@@ -27,8 +27,36 @@
 
 ## 🚀 快速开始
 
-### 环境要求
 
+### Deno Deploy部署
+
+Deno Deploy是一个全球分布式的边缘计算平台，非常适合部署Deno应用。
+
+#### 步骤：
+
+1. **准备代码**
+   - Fork本仓库，顺便点个小心心
+
+2. **登录Deno Deploy**
+   - 访问 [https://dash.deno.com/](https://dash.deno.com/)
+   - 使用GitHub账号登录
+
+3. **创建新项目**
+   - 点击"New Project"按钮
+   - 选择你的GitHub仓库
+   - 选择包含`main.ts`文件
+
+4. **配置环境变量**
+   - 在项目设置中，添加环境变量
+     - 具体配置见env.example
+
+5. **部署**
+   - 点击"Deploy"按钮
+   - 等待部署完成
+
+### 本地部署
+
+##环境要求
 - Deno 1.40+
 - 现代浏览器或 Node.js 环境
 
