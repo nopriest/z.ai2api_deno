@@ -14,7 +14,7 @@ import { StreamResponseHandler, NonStreamResponseHandler } from "./response_hand
 
 export const openaiRouter = new Router();
 
-openaiRouter.get("/v1/models", async (ctx) => {
+openaiRouter.get("/models", async (ctx) => {
   /**List available models*/
   const currentTime = Math.floor(Date.now() / 1000);
   const response: ModelsResponse = {
