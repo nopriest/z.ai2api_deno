@@ -2,7 +2,7 @@
  * Application data models
  */
 
-import { z } from "zod/zod.ts";
+import { z } from "zod/mod.ts";
 
 // Content part model for OpenAI's new content format
 export const ContentPartSchema = z.object({
