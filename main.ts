@@ -1,36 +1,64 @@
-{
-  "name": "z-ai2api-deno",
-  "version": "1.2.0",
-  "description": "轻量级 OpenAI API 兼容代理服务，通过 Claude Code Router 接入 Z.AI，支持 GLM-4.5 系列模型的完整功能",
-  "type": "module",
-  "imports": {
-    "std/": "https://deno.land/std@0.208.0/",
-    "oak/": "https://deno.land/x/oak@v12.6.0/",
-    "zod/": "https://deno.land/x/zod@v3.22.4/"
-  },
-  "tasks": {
-    "start": "deno run --allow-net --allow-env --allow-read main.ts",
-    "dev": "deno run --allow-net --allow-env --allow-read --watch main.ts",
-    "test": "deno test --allow-net --allow-env --allow-read",
-    "fmt": "deno fmt",
-    "lint": "deno lint",
-    "check": "deno check **/*.ts"
-  },
-  "compilerOptions": {
-    "allowJs": true,
-    "lib": ["deno.window"],
-    "strict": true
-  },
-  "lint": {
-    "include": ["**/*.ts"],
-    "exclude": ["**/node_modules/**"]
-  },
-  "fmt": {
-    "useTabs": false,
-    "lineWidth": 88,
-    "indentWidth": 2,
-    "semiColons": true,
-    "singleQuote": false,
-    "proseWrap": "preserve"
+/**
+ * Main application entry point
+ */
+
+import { Application, Router } from "oak/mod.ts";
+import { config } from "./app/core/config.ts";
+import { openaiRouter } from "./app/core/openai.ts";
+
+// Create Oak application
+const app = new Application();
+
+// Add CORS middleware
+app.use(async (ctx, next) => {
+  ctx.response.headers.set("Access-Control-Allow-Origin", "*");
+  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
+  ctx.response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  ctx.response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  
+  if (ctx.request.method === "OPTIONS") {
+    ctx.response.status = 200;
+    return;
   }
-}
+  
+  await next();
+});
+
+// Create main router
+const router = new Router();
+
+// Include OpenAI API routes
+router.use("/v1", openaiRouter.routes());
+router.use("/v1", openaiRouter.allowedMethods());
+
+// Root endpoint
+router.get("/", (ctx) => {
+  ctx.response.body = { message: "OpenAI Compatible API Server" };
+});
+
+// Handle OPTIONS requests
+router.options("/", (ctx) => {
+  ctx.response.status = 200;
+});
+
+// Use router
+app.use(router.routes());
+app.use(router.allowedMethods());
+
+// Error handling middleware
+app.use(async (ctx, next) => {
+  try {
+    await next();
+  } catch (err) {
+    console.error("Unhandled error:", err);
+    ctx.response.status = 500;
+    ctx.response.body = { error: "Internal server error" };
+  }
+});
+
+// Start server
+const port = config.LISTEN_PORT;
+console.log(`🚀 Server starting on http://0.0.0.0:${port}`);
+console.log(`📖 API docs available at http://localhost:${port}/v1/models`);
+
+await app.listen({ port });
