@@ -170,7 +170,7 @@ export async function getBrowserHeaders(refererChatId: string = ""): Promise<Rec
     "sec-fetch-dest": "empty",
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-origin",
-    "X-FE-Version": "prod-fe-1.0.70",
+    "X-FE-Version": "prod-fe-1.0.79",
     "Origin": config.CLIENT_HEADERS["Origin"],
     "Cache-Control": "no-cache",
     "Pragma": "no-cache",
