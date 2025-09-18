@@ -38,6 +38,56 @@ export function debugLog(message: string, ...args: any[]): void {
   }
 }
 
+/**
+ * 生成API请求所需的签名头部
+ * 签名参数逻辑实现
+ */
+export async function generateSignatureHeaders(
+  token: string, 
+  body: string = "", 
+  method: string = "POST"
+): Promise<Record<string, string>> {
+  // 生成时间戳（毫秒）
+  const timestamp = Date.now().toString();
+  
+  // 生成16位随机nonce
+  const randomBytes = new Uint8Array(8);
+  crypto.getRandomValues(randomBytes);
+  const nonce = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
+  
+  // 生成签名字符串: method + "\n" + timestamp + "\n" + nonce + "\n" + body
+  const signString = `${method}\n${timestamp}\n${nonce}\n${body}`;
+  
+  // 使用HMAC-SHA256生成签名
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(token),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(signString)
+  );
+  
+  // 将签名转换为十六进制字符串
+  const signatureHex = Array.from(new Uint8Array(signature))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+  
+  debugLog(`🔐 生成签名头部: timestamp=${timestamp}, nonce=${nonce.substring(0, 8)}..., signature=${signatureHex.substring(0, 16)}...`);
+  
+  return {
+    "X-Timestamp": timestamp,
+    "X-Nonce": nonce,
+    "X-Signature": signatureHex
+  };
+}
+
 export function generateRequestIds(): [string, string] {
   /**Generate unique IDs for chat and message*/
   const timestamp = Math.floor(Date.now() / 1000);
@@ -151,6 +201,11 @@ export async function getAnonymousToken(): Promise<string> {
   headers["Accept-Language"] = "zh-CN,zh;q=0.9";
   headers["Referer"] = `${config.CLIENT_HEADERS['Origin']}/`;
   
+  // 为获取token添加签名头部（使用临时token）
+  const tempToken = "anonymous";
+  const signatureHeaders = await generateSignatureHeaders(tempToken, "", "GET");
+  Object.assign(headers, signatureHeaders);
+  
   try {
     const response = await fetch(
       `${config.CLIENT_HEADERS['Origin']}/api/v1/auths/`,
@@ -225,13 +280,20 @@ export async function callUpstreamApi(
   const headers = await getBrowserHeaders(chatId);
   headers["Authorization"] = `Bearer ${authToken}`;
   
+  // 生成请求体JSON字符串用于签名
+  const bodyJson = JSON.stringify(upstreamReq);
+  
+  // 生成签名头部
+  const signatureHeaders = await generateSignatureHeaders(authToken, bodyJson, "POST");
+  Object.assign(headers, signatureHeaders);
+  
   debugLog(`调用上游API: ${config.API_ENDPOINT}`);
-  debugLog(`上游请求体: ${JSON.stringify(upstreamReq)}`);
+  debugLog(`上游请求体: ${bodyJson}`);
   
   const response = await fetch(config.API_ENDPOINT, {
     method: "POST",
     headers,
-    body: JSON.stringify(upstreamReq),
+    body: bodyJson,
     signal: AbortSignal.timeout(60000),
   });
   
