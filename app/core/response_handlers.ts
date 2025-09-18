@@ -81,6 +81,7 @@ export class StreamResponseHandler extends ResponseHandler {
   private hasTools: boolean;
   private bufferedContent: string = "";
   private toolCalls: any = null;
+  private streamEnded: boolean = false; // 防止重复结束流
   
   constructor(upstreamReq: UpstreamRequest, chatId: string, authToken: string, hasTools: boolean = false) {
     super(upstreamReq, chatId, authToken);
@@ -127,7 +128,10 @@ export class StreamResponseHandler extends ResponseHandler {
         // Check for errors
         if (this._hasError(upstreamData)) {
           const error = this._getError(upstreamData);
-          yield* handleUpstreamError(error);
+          if (!this.streamEnded) {
+            yield* handleUpstreamError(error);
+            this.streamEnded = true;
+          }
           break;
         }
         
@@ -138,14 +142,38 @@ export class StreamResponseHandler extends ResponseHandler {
         yield* this._processContent(upstreamData, sentInitialAnswer);
         
         // Check if done
-        if (upstreamData.data.done || upstreamData.data.phase === "done") {
+        if ((upstreamData.data.done || upstreamData.data.phase === "done") && !this.streamEnded) {
           debugLog("检测到流结束信号");
           yield* this._sendEndChunk();
+          this.streamEnded = true;
           break;
+        }
+      }
+    } catch (streamError) {
+      debugLog(`流处理异常: ${streamError}`);
+      // 确保在异常情况下也能正确结束流
+      if (!this.streamEnded) {
+        try {
+          const errorChunk = createOpenAIResponseChunk(
+            config.PRIMARY_MODEL,
+            undefined,
+            "stop"
+          );
+          yield `data: ${JSON.stringify(errorChunk)}\n\n`;
+          yield "data: [DONE]\n\n";
+          this.streamEnded = true;
+          debugLog("异常情况下强制结束流");
+        } catch (endError) {
+          debugLog(`结束流时发生错误: ${endError}`);
         }
       }
     } finally {
       await parser[Symbol.asyncDispose]();
+      // 最后的保护：确保无论如何都标记为已结束
+      if (!this.streamEnded) {
+        this.streamEnded = true;
+        debugLog("在finally块中标记流为已结束");
+      }
     }
   }
   
@@ -235,7 +263,12 @@ export class StreamResponseHandler extends ResponseHandler {
   }
   
   private async *_sendEndChunk(): AsyncGenerator<string, void, unknown> {
-    /**Send end chunk and DONE signal*/
+    /**Send end chunk and DONE signal (with duplicate protection)*/
+    if (this.streamEnded) {
+      debugLog("流已结束，跳过重复的结束信号");
+      return;
+    }
+    
     let finishReason = "stop";
     
     if (this.hasTools) {
@@ -282,6 +315,7 @@ export class StreamResponseHandler extends ResponseHandler {
     );
     yield `data: ${JSON.stringify(endChunk)}\n\n`;
     yield "data: [DONE]\n\n";
+    this.streamEnded = true;
     debugLog("流式响应完成");
   }
 }
