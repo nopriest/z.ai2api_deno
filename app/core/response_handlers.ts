@@ -2,9 +2,9 @@
  * Response handlers for streaming and non-streaming responses
  */
 
-import { config } from "./config.ts";
-import { 
-  Message, Delta, Choice, Usage, OpenAIResponse, 
+import { config, getModelConfig } from "./config.ts";
+import {
+  Message, Delta, Choice, Usage, OpenAIResponse,
   UpstreamRequest, UpstreamData, UpstreamError, ModelItem,
   UpstreamDataSchema
 } from "../models/schemas.ts";
@@ -106,9 +106,12 @@ export class StreamResponseHandler extends ResponseHandler {
       return;
     }
     
+    // Get model configuration for proper model name in response
+    const modelConfig = getModelConfig(this.upstreamReq.model);
+    
     // Send initial role chunk
     const firstChunk = createOpenAIResponseChunk(
-      config.PRIMARY_MODEL,
+      modelConfig.name,
       { role: "assistant" }
     );
     yield `data: ${JSON.stringify(firstChunk)}\n\n`;
@@ -154,8 +157,9 @@ export class StreamResponseHandler extends ResponseHandler {
       // 确保在异常情况下也能正确结束流
       if (!this.streamEnded) {
         try {
+          const modelConfig = getModelConfig(this.upstreamReq.model);
           const errorChunk = createOpenAIResponseChunk(
-            config.PRIMARY_MODEL,
+            modelConfig.name,
             undefined,
             "stop"
           );
@@ -168,7 +172,8 @@ export class StreamResponseHandler extends ResponseHandler {
         }
       }
     } finally {
-      await parser[Symbol.asyncDispose]();
+      // 使用close方法而不是asyncDispose，以兼容不同的TypeScript配置
+      parser.close();
       // 最后的保护：确保无论如何都标记为已结束
       if (!this.streamEnded) {
         this.streamEnded = true;
@@ -224,8 +229,9 @@ export class StreamResponseHandler extends ResponseHandler {
         const extractedContent = this._extractEditContent(upstreamData.data.edit_content);
         if (extractedContent) {
           debugLog(`发送普通内容: ${extractedContent}`);
+          const modelConfig = getModelConfig(this.upstreamReq.model);
           const chunk = createOpenAIResponseChunk(
-            config.PRIMARY_MODEL,
+            modelConfig.name,
             { content: extractedContent }
           );
           yield `data: ${JSON.stringify(chunk)}\n\n`;
@@ -238,15 +244,17 @@ export class StreamResponseHandler extends ResponseHandler {
         if (processedContent) {
           if (upstreamData.data.phase === "thinking") {
             debugLog(`发送思考内容: ${processedContent}`);
+            const modelConfig = getModelConfig(this.upstreamReq.model);
             const chunk = createOpenAIResponseChunk(
-              config.PRIMARY_MODEL,
+              modelConfig.name,
               { reasoning_content: processedContent }
             );
             yield `data: ${JSON.stringify(chunk)}\n\n`;
           } else {
             debugLog(`发送普通内容: ${processedContent}`);
+            const modelConfig = getModelConfig(this.upstreamReq.model);
             const chunk = createOpenAIResponseChunk(
-              config.PRIMARY_MODEL,
+              modelConfig.name,
               { content: processedContent }
             );
             yield `data: ${JSON.stringify(chunk)}\n\n`;
@@ -286,8 +294,9 @@ export class StreamResponseHandler extends ResponseHandler {
             function: tc.function || {},
           };
           
+          const modelConfig = getModelConfig(this.upstreamReq.model);
           const outChunk = createOpenAIResponseChunk(
-            config.PRIMARY_MODEL,
+            modelConfig.name,
             { tool_calls: [toolCallDelta] }
           );
           yield `data: ${JSON.stringify(outChunk)}\n\n`;
@@ -298,8 +307,9 @@ export class StreamResponseHandler extends ResponseHandler {
         // Send regular content
         const trimmedContent = removeToolJsonContent(this.bufferedContent);
         if (trimmedContent) {
+          const modelConfig = getModelConfig(this.upstreamReq.model);
           const contentChunk = createOpenAIResponseChunk(
-            config.PRIMARY_MODEL,
+            modelConfig.name,
             { content: trimmedContent }
           );
           yield `data: ${JSON.stringify(contentChunk)}\n\n`;
@@ -308,8 +318,9 @@ export class StreamResponseHandler extends ResponseHandler {
     }
     
     // Send final chunk
+    const modelConfig = getModelConfig(this.upstreamReq.model);
     const endChunk = createOpenAIResponseChunk(
-      config.PRIMARY_MODEL,
+      modelConfig.name,
       undefined,
       finishReason
     );
@@ -380,7 +391,8 @@ export class NonStreamResponseHandler extends ResponseHandler {
         }
       }
     } finally {
-      await parser[Symbol.asyncDispose]();
+      // 使用close方法而不是asyncDispose，以兼容不同的TypeScript配置
+      parser.close();
     }
     
     const finalContent = fullContent.join("");
@@ -412,7 +424,7 @@ export class NonStreamResponseHandler extends ResponseHandler {
       id: `chatcmpl-${Math.floor(Date.now() / 1000)}`,
       object: "chat.completion",
       created: Math.floor(Date.now() / 1000),
-      model: config.PRIMARY_MODEL,
+      model: getModelConfig(this.upstreamReq.model).name,
       choices: [{
         index: 0,
         message: {
